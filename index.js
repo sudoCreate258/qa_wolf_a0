@@ -9,7 +9,8 @@ async function sortHackerNewsArticles() {
 
   // go to Hacker News
   await page.goto("https://news.ycombinator.com/newest");
-}
+
+  // TODO - validate + print first 100 articles (new to old)}
 
 (async () => {
   await sortHackerNewsArticles();
