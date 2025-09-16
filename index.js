@@ -19,10 +19,11 @@ async function sortHackerNewsArticles() {
 
     while (morePageFlag){
         await loadRows(page); //allow pages to load
-        //process - extractts the reduces  all 100 into an array
+        //process - extract and reduce all items into the array
         //        - parse time since post
-        //        - validate by time new to old (sort)
-        //        - prepare post for screen console
+        //        - validate by time new to old (sort by time)
+        //        - prepare post for screen console (first 100)
+        //          = update flag w true condition calling 'More' 
     }
     //output to screen
 }
