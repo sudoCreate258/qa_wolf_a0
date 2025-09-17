@@ -11,21 +11,22 @@ async function sortHackerNewsArticles() {
     await page.goto("https://news.ycombinator.com/newest");
     
     // TODO - validate + print first 100 articles (new to old)
-    //input - driver code
-    //variable declaration
-    let entry_lst = [];
+    //input - variable declaration
+    let articleQ = [];
     let pageCount = 0;
     let morePageFlag = true;
 
+    //process 
     while (morePageFlag){
-        await loadRows(page); //allow pages to load
-        //process - extract and reduce all items into the array
-        //        - parse time since post
-        //        - validate by time new to old (sort by time)
-        //        - prepare post for screen console (first 100)
-        //          = update flag w true condition calling 'More' 
+        await loadRows(page);//allow pages to load
+        //extract and parse info from page
+        //populate queue in time "order" (new to old)
+        //update flag w if len(queue) > 100
     }
     //output to screen
+    //prepare post for screen console (first 100)
+    //print first 100 items
+
 }
 
 (async () => {
