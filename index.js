@@ -1,32 +1,34 @@
 // EDIT THIS FILE TO COMPLETE ASSIGNMENT QUESTION 1
 const { chromium } = require("playwright");
+// TODO - validate + print first 100 articles (new to old)
+/**
+class HN_Page{
+    constructor(page){}
+
+    async gotToSite( URL ){}
+    loadRoads(DEBUG) {}
+    runPipeline(DEBUG){}
+    async extractEntries(){}
+    printToScreen()
+}
+**/
 
 async function sortHackerNewsArticles() {
-    // launch browser
     const browser = await chromium.launch({ headless: false });
     const context = await browser.newContext();
     const page = await context.newPage();
-
+    // -- create news page object
     // go to Hacker News
-    await page.goto("https://news.ycombinator.com/newest");
-    
-    // TODO - validate + print first 100 articles (new to old)
-    //input - variable declaration
-    let articleQ = [];
-    let pageCount = 0;
-    let morePageFlag = true;
+    //await page.goto("https://news.ycombinator.com/newest");
+    // -- goToSite( URL )
+    let pageFlag = true; 
 
-    //process 
-    while (morePageFlag){
-        await loadRows(page);//allow pages to load
-        //extract and parse info from page
-        //populate queue in time "order" (new to old)
-        //update flag w if len(queue) > 100
+    while (pageFlag){
+        // -- loadRows(DEBUG) 
+        // -- runPipeline(DEBUG)
+        // -- updatePageFlag()
     }
-    //output to screen
-    //prepare post for screen console (first 100)
-    //print first 100 items
-
+    // -- printToScreen(DEBUG)
 }
 
 (async () => {
