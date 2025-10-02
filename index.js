@@ -3,11 +3,14 @@ const { chromium } = require("playwright");
 
 /**class HN_Page{ //TODO validate + print first 100 articles (new to old)
     constructor(page){}
-    gotToSite(URL){
-    loadRoads(DEBUG) {}
+
+    async gotToSite(URL){}
+    async loadRows(DEBUG){}
+    async extractEntries(){}
+
     runPipeline(DEBUG){}
-    extractEntries(){}
-    printToScreen()
+    updatePageFlag(){}
+    printToScreen(){}
 }**/
 
 async function sortHackerNewsArticles() {
@@ -23,7 +26,6 @@ async function sortHackerNewsArticles() {
         // -- runPipeline(DEBUG)
         // -- updatePageFlag()
     }
-    // -- printToScreen(DEBUG)
 }
 
 (async () => {
