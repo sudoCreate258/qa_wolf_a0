@@ -2,38 +2,42 @@
 const { chromium } = require("playwright");
 
 class HN_Page{ //TODO validate + print first 100 articles (new to old)
-    constructor(p){
+    constructor(p,u){
         this.page = p;
+        this.url = u;
         this.pageFlag = false;
-        //more button
-        //entry locator
-        //entry container
     }
-    getPageFlag(){ return this.pageFlag;}
-
-    async gotToSite(URL){
-        await this.page.goto(URL);
-        return page;
+    
+    async goToSite(){
+        await this.page.goto(this.url);
     }
 
-/*  async loadRows(DEBUG){}
-    async extractEntries(){}
-    runPipeline(DEBUG){}
-    printToScreen(){}
-}*/
+    runPipeline(DEBUG=true){
+        this.goToSite();
+/*      async loadRows(DEBUG){}
+        async extractEntries(){}
+            //more button
+            //entry locator
+            //entry container
+        printToScreen(){}*/
+    }
+
+    getPageFlag(){
+        return this.pageFlag;
+    }
+}
 
     async function sortHackerNewsArticles() {
     const browser = await chromium.launch({ headless: false });
     const context = await browser.newContext();
     const page = await context.newPage();
     // -- create news page object -- go to Hacker News
-    // -- page = goToSite(url="https://news.ycombinator.com/newest")
+    let hpage = new HN_Page(page,"https://news.ycombinator.com/newest")
+    let pageFlag = true;
 
-    let pageFlag = true; 
-
-    while (pageFlag){
-        // -- runPipeline(DEBUG)
-        // -- pageFlag = getPageFlag()
+    while(pageFlag){
+        hpage.runPipeline()
+        pageFlag = hpage.getPageFlag();
     }
 }
 
