@@ -5,7 +5,7 @@ class HN_Page{ //TODO validate + print first 100 articles (new to old)
     constructor(p,u){
         this.page = p;
         this.url = u;
-        this.pageFlag = false;
+        this.pageFlag = true;
     }
     
     async goToSite(){
@@ -13,6 +13,7 @@ class HN_Page{ //TODO validate + print first 100 articles (new to old)
     }
 
     runPipeline(DEBUG=true){
+        this.pageFlag = false;
         this.goToSite();
 /*      async loadRows(DEBUG){}
         async extractEntries(){}
@@ -33,7 +34,7 @@ class HN_Page{ //TODO validate + print first 100 articles (new to old)
     const page = await context.newPage();
     // -- create news page object -- go to Hacker News
     let hpage = new HN_Page(page,"https://news.ycombinator.com/newest")
-    let pageFlag = true;
+    let pageFlag = hpage.getPageFlag();
 
     while(pageFlag){
         hpage.runPipeline()
