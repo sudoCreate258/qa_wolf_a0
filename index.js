@@ -9,7 +9,47 @@ class HN_Page{
         this.rlocate = null; //row subset
         this.mLocate = null; //more button
     }
-    
+
+    async runPipeline(){
+        await this.visitPage();
+        for(let x=0; x<4; x++){
+            await this.extractEntries();
+            const clicked = await this.viewMore();
+        } //TODO validate + print first 100 articles (new to old)
+        this.validateEntries();
+        this.printToScreen();
+    }   
+
+    async visitPage(){
+        await this.page.goto(this.url);
+        this.rlocate = this.page.locator('tr.athing');
+        this.mlocate = this.page.locator('a.morelink');
+    }
+
+    async extractEntries(){
+        const rows = await this.rlocate.all();
+        for(const r of rows){
+            let entrySize = this.entries.length;
+            let sizeFlag = entrySize < 100; 
+            
+            const parsed = sizeFlag ? await this.parseRow(r) : null;
+            if(sizeFlag) this.entries.push(parsed);
+            else         break;
+        }
+    }
+
+    validateEntries(){
+        console.log(`sort`);
+        this.entries.sort((a,b) => b.epoch_time - a.epoch_time);
+    }
+
+    printToScreen(){
+        console.log("Extracted Entries:");
+        let c = 0; 
+        for(const e of this.entries)
+            console.log(`${c++}`); //${e.epoch_time} ${e.sub_title}`);
+    }
+
     async parseRow(r){
         const raw_title = r.locator('span.titleline > a');
         const sub_title = await raw_title.innerText();
@@ -26,31 +66,6 @@ class HN_Page{
         return { sub_title, epoch_time, link };
     }
 
-    async visitPage(){
-        await this.page.goto(this.url);
-        this.rlocate = this.page.locator('tr.athing');
-        this.mlocate = this.page.locator('a.morelink');
-    }
-
-    async extractEntries(){
-        const rows = await this.rlocate.all();
-        for(const r of rows){
-            const parsed = await this.parseRow(r);
-            this.entries.push(parsed);
-        }
-    }
-
-    validateEntries(){
-        console.log(`sort`);
-        this.entries.sort((a,b) => b.epoch_time - a.epoch_time);
-    }
-
-    printToScreen(){
-        console.log("Extracted Entries:");
-        for(const e of this.entries.slice(0,100))
-            console.log(`${e.epoch_time} ${e.sub_title}`);
-    }
-
     async viewMore(){
         const visible = await this.mlocate.isVisible();
         if(visible){
@@ -60,16 +75,6 @@ class HN_Page{
         }
         return false;
     }
-
-    async runPipeline(){
-        await this.visitPage();
-        for(let x=0; x<4; x++){
-            await this.extractEntries();
-            const clicked = await this.viewMore();
-        } //TODO validate + print first 100 articles (new to old)
-        this.validateEntries();
-        this.printToScreen();
-    }   
 }
 
 async function sortHackerNewsArticles() {
@@ -79,7 +84,7 @@ async function sortHackerNewsArticles() {
 
     let hpg = new HN_Page(page,"https://news.ycombinator.com/newest");
     await hpg.runPipeline();    
-    //await browser.close();      
+    await browser.close();      
 }
 
 (async () => {
