@@ -40,15 +40,15 @@ class HN_Page{
         }
     }
 
-    //TODO validate + print first 100 articles (new to old)
     validateEntries(){
-        this.entries.sort((a,b) => a.epoch_time - b.epoch_time);
+        console.log(`sort`);
+        this.entries.sort((a,b) => b.epoch_time - a.epoch_time);
     }
 
     printToScreen(){
         console.log("Extracted Entries:");
         for(const e of this.entries.slice(0,100))
-            console.log(`${e.sub_title}`);
+            console.log(`${e.epoch_time} ${e.sub_title}`);
     }
 
     async viewMore(){
@@ -66,7 +66,7 @@ class HN_Page{
         for(let x=0; x<4; x++){
             await this.extractEntries();
             const clicked = await this.viewMore();
-        }
+        } //TODO validate + print first 100 articles (new to old)
         this.validateEntries();
         this.printToScreen();
     }   
@@ -79,7 +79,7 @@ async function sortHackerNewsArticles() {
 
     let hpg = new HN_Page(page,"https://news.ycombinator.com/newest");
     await hpg.runPipeline();    
-    await browser.close();      
+    //await browser.close();      
 }
 
 (async () => {
