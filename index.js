@@ -12,18 +12,18 @@ class HN_Page{
     
     async parseRow(r){
         const raw_title = r.locator('span.titleline > a');
-        const sub_title = await raw_title.innerText();
-
         const link = await raw_title.getAttribute('href');
+        const sub_title = await raw_title.innerText();
+        
+        let str = 'xpath=following-sibling::tr[1]//span[@class="age"]'
+        const raw_age = r.locator(str); 
+        const raw_age_text  = await raw_age.textContent();
+        const raw_age_title = await raw_age.getAttribute('title');
+        
+        let array = raw_age_title.split('T');
+        let epoch_time = array[1].split(' ')[1]
 
-        console.log(`${sub_title} ${link}`);
-        //const link = r.locator('href');
-        //const age = r.locator('span.age');
-
-        return {
-            sub_title: sub_title.trim() ,
-            link: link,
-        };
+        return { sub_title, epoch_time, link };
     }
 
     async visitPage(){
@@ -41,15 +41,14 @@ class HN_Page{
 
     printToScreen(){
         console.log("Extracted Entries:");
-        for(const e of this.entries){
-            console.log(`${e}`);
-        }
+        for(const e of this.entries)
+            console.log(`${e.sub_title}\n\t${e.link}`);
     }
 
     async runPipeline(){//loop such that 4 max iterations on more button
         await this.visitPage();
         await this.extractEntries();
-        //this.printToScreen();
+        this.printToScreen();
     }   
 }
 
@@ -60,7 +59,7 @@ async function sortHackerNewsArticles() {
 
     let hpg = new HN_Page(page,"https://news.ycombinator.com/newest");
     await hpg.runPipeline();    // -- run object function
-//await browser.close();      // -- close playwright features
+    //await browser.close();    // -- close playwright features
 }
 
 (async () => {
