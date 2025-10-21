@@ -1,19 +1,19 @@
 // EDIT THIS FILE TO COMPLETE ASSIGNMENT QUESTION 1
 const { chromium } = require("playwright");
 
-//TODO validate + print first 100 articles (new to old)
 class HN_Page{ 
     constructor(p,u){
         this.entries = [];
         this.page = p;
         this.url  = u;
-        this.rlocate = null;
+        this.rlocate = null; //row subset
+        this.mLocate = null; //more button
     }
     
     async parseRow(r){
         const raw_title = r.locator('span.titleline > a');
-        const link = await raw_title.getAttribute('href');
         const sub_title = await raw_title.innerText();
+        const link = await raw_title.getAttribute('href');
         
         let str = 'xpath=following-sibling::tr[1]//span[@class="age"]'
         const raw_age = r.locator(str); 
@@ -29,6 +29,7 @@ class HN_Page{
     async visitPage(){
         await this.page.goto(this.url);
         this.rlocate = this.page.locator('tr.athing');
+        this.mlocate = this.page.locator('a.morelink');
     }
 
     async extractEntries(){
@@ -39,15 +40,34 @@ class HN_Page{
         }
     }
 
-    printToScreen(){
-        console.log("Extracted Entries:");
-        for(const e of this.entries)
-            console.log(`${e.sub_title}\n\t${e.link}`);
+    //TODO validate + print first 100 articles (new to old)
+    validateEntries(){
+        this.entries.sort((a,b) => a.epoch_time - b.epoch_time);
     }
 
-    async runPipeline(){//loop such that 4 max iterations on more button
+    printToScreen(){
+        console.log("Extracted Entries:");
+        for(const e of this.entries.slice(0,100))
+            console.log(`${e.sub_title}`);
+    }
+
+    async viewMore(){
+        const visible = await this.mlocate.isVisible();
+        if(visible){
+            await this.mlocate.click();
+            await this.page.waitForLoadState("load");
+            return true;
+        }
+        return false;
+    }
+
+    async runPipeline(){
         await this.visitPage();
-        await this.extractEntries();
+        for(let x=0; x<4; x++){
+            await this.extractEntries();
+            const clicked = await this.viewMore();
+        }
+        this.validateEntries();
         this.printToScreen();
     }   
 }
@@ -58,8 +78,8 @@ async function sortHackerNewsArticles() {
     const page = await context.newPage();
 
     let hpg = new HN_Page(page,"https://news.ycombinator.com/newest");
-    await hpg.runPipeline();    // -- run object function
-    //await browser.close();    // -- close playwright features
+    await hpg.runPipeline();    
+    await browser.close();      
 }
 
 (async () => {
