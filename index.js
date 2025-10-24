@@ -6,24 +6,33 @@ class HN_Page{
         this.entries = [];
         this.page = p;
         this.url  = u;
-        this.rlocate = null; //row subset
-        this.mLocate = null; //more button
-    }
+        this.rlocate = null;
+        this.mLocate = null;
+    }   //TODO validate + print first 100 articles (new to old)
 
-    async runPipeline(){
+    async runPipeline(){ 
         await this.visitPage();
         for(let x=0; x<4; x++){
             await this.extractEntries();
             const clicked = await this.viewMore();
-        } //TODO validate + print first 100 articles (new to old)
+        } 
         this.validateEntries();
         this.printToScreen();
     }   
 
+    printToScreen(){
+        console.log("Extracted Entries:");
+        let c = 0; 
+        for(const e of this.entries)
+            console.log(`${++c} ${e.sub_title}`);
+    }
+
     async visitPage(){
         await this.page.goto(this.url);
-        this.rlocate = this.page.locator('tr.athing');
-        this.mlocate = this.page.locator('a.morelink');
+        await this.page.waitForLoadState("load");
+
+        this.rlocate = this.page.locator('tr.athing');  //table set
+        this.mlocate = this.page.locator('a.morelink'); //more button
     }
 
     async extractEntries(){
@@ -39,15 +48,7 @@ class HN_Page{
     }
 
     validateEntries(){
-        console.log(`sort`);
         this.entries.sort((a,b) => b.epoch_time - a.epoch_time);
-    }
-
-    printToScreen(){
-        console.log("Extracted Entries:");
-        let c = 0; 
-        for(const e of this.entries)
-            console.log(`${c++}`); //${e.epoch_time} ${e.sub_title}`);
     }
 
     async parseRow(r){
