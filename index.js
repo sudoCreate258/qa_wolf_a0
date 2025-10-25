@@ -20,19 +20,22 @@ class HN_Page{
         this.printToScreen();
     }   
 
-    printToScreen(){
-        console.log("Extracted Entries:");
-        let c = 0; 
-        for(const e of this.entries)
-            console.log(`${++c} ${e.sub_title}`);
-    }
-
     async visitPage(){
         await this.page.goto(this.url);
         await this.page.waitForLoadState("load");
 
         this.rlocate = this.page.locator('tr.athing');  //table set
         this.mlocate = this.page.locator('a.morelink'); //more button
+    }
+
+    async viewMore(){
+        const visible = await this.mlocate.isVisible();
+        if(visible){
+            await this.mlocate.click();
+            await this.page.waitForLoadState("load");
+            return true;
+        }
+        return false;
     }
 
     async extractEntries(){
@@ -47,6 +50,13 @@ class HN_Page{
         }
     }
 
+    printToScreen(){
+        console.log("Extracted Entries:");
+        let cnt = 0; 
+        for(const e of this.entries)
+            console.log(`${++cnt} ${e.sub_title}`);
+    }
+
     validateEntries(){
         this.entries.sort((a,b) => b.epoch_time - a.epoch_time);
     }
@@ -58,23 +68,12 @@ class HN_Page{
         
         let str = 'xpath=following-sibling::tr[1]//span[@class="age"]'
         const raw_age = r.locator(str); 
-        const raw_age_text  = await raw_age.textContent();
         const raw_age_title = await raw_age.getAttribute('title');
-        
+
         let array = raw_age_title.split('T');
         let epoch_time = array[1].split(' ')[1]
 
         return { sub_title, epoch_time, link };
-    }
-
-    async viewMore(){
-        const visible = await this.mlocate.isVisible();
-        if(visible){
-            await this.mlocate.click();
-            await this.page.waitForLoadState("load");
-            return true;
-        }
-        return false;
     }
 }
 
