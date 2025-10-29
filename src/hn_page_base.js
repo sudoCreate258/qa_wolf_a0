@@ -13,14 +13,15 @@ export class HN_Page{
         this.entries.sort((a,b) => b.epoch_time - a.epoch_time);
     }
 
-    async runPipeline(flag=true){ 
+    async runPipeline(debugFlag=true){ 
         await this.visitPage();
         for(let x=0; x<4; x++){
             await this.extractEntries();
             const clicked = await this.viewMore();
+            if(!clicked) break;
         } 
         this.validateEntries();
-        flag ? this.printToScreen() : undefined;
+        debugFlag ? this.printToScreen() : undefined;
     }   
 
     async visitPage(){
