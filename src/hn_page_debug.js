@@ -1,7 +1,7 @@
 import { chromium } from "playwright";
 
 export class HN_Page{ 
-    constructor(p,u){ 
+    constructor(p,u="https://news.ycombinator.com/newest"){
         this.entries = [];
         this.page = p;
         this.url  = u;
@@ -13,13 +13,13 @@ export class HN_Page{
         this.entries.sort((a,b) => b.epoch_time - a.epoch_time);
     }
 
-/*    export async function debugPipeline(fn=this.runPipeline){
+    export async function debugPipeline(fn=this.runPipeline){
         const browser = await chromium.launch({ headless: true });
         const context = await browser.newContext();
         const page    = await context.newPage();
         await fn();
         await browser.close();      
-    }*/
+    }
 
     async runPipeline(debugFlag=true){ 
         await this.visitPage();
@@ -31,7 +31,9 @@ export class HN_Page{
         
         if(debugFlag){
             this.printToScreen();
-        }
+            await browser.close();      
+        }else
+            this.printToScreen();
     }   
 
     async visitPage(){

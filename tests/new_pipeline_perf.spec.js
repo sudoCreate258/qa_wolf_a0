@@ -25,7 +25,6 @@ test.describe('Micro-Optimization Performance Analysis: Stable vs. Micro-Optimiz
         console.log(`[INFO] Running with a required Static THROTTLE_LIMIT of: ${THROTTLE_LIMIT}`);
         
         // --- Run 1: Stable Optimized Pipeline (as the New Baseline) ---
-        // Executes the code from src/hn_page_optim.js
         const stableBaseline = await withMetrics(
             'Stable Optimized Baseline', 
             async () => {

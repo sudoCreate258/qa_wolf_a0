@@ -73,7 +73,7 @@ export class HN_Page_Optim extends HN_Page {
 
 export async function sortHackerNewsArticles(page) {
         // Instantiate the optimized class with the correct name
-        let hpg = new HN_Page_Stable(page,"https://news.ycombinator.com/newest");
+        let hpg = new HN_Page_Optim(page,"https://news.ycombinator.com/newest");
         await hpg.runPipeline(false);   
 }
 
