@@ -1,5 +1,5 @@
 // EDIT THIS FILE TO COMPLETE ASSIGNMENT QUESTION 1
-const { chromium } from "playwright";
+import { chromium } from "playwright";
 import { HN_Page } from './hn_page_base.js'; 
 
 async function sortHackerNewsArticles() {
