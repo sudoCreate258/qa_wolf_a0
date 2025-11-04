@@ -111,9 +111,9 @@ export async function withMetrics(label, fn, ...args) {
               batchRatio: batchRatio.toFixed(2),
               
               // Security metrics
-              cveRiskScore,
-              timingVarianceCV: cv.toFixed(3),
-              vulnerabilities: vulnerabilities.length > 0 ? vulnerabilities : ['NONE'],
+              //cveRiskScore,
+              //timingVarianceCV: cv.toFixed(3),
+              //vulnerabilities: vulnerabilities.length > 0 ? vulnerabilities : ['NONE'],
               
               // Optimization flags
               isOptimized: batchRatio > 0.5 && !hasDOMOverhead,
