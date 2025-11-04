@@ -13,14 +13,6 @@ export class HN_Page{
         this.entries.sort((a,b) => b.epoch_time - a.epoch_time);
     }
 
-/*    export async function debugPipeline(fn=this.runPipeline){
-        const browser = await chromium.launch({ headless: true });
-        const context = await browser.newContext();
-        const page    = await context.newPage();
-        await fn();
-        await browser.close();      
-    }*/
-
     async runPipeline(debugFlag=true){ 
         await this.visitPage();
         for(let x=0; x<4; x++){
@@ -90,9 +82,9 @@ export class HN_Page{
 export async function sortHackerNewsArticles() {
     const browser = await chromium.launch({ headless: false });
     const context = await browser.newContext();
-    const page = await context.newPage();
+    const page    = await context.newPage();
 
-    let hpg = new HN_Page(page,"https://news.ycombinator.com/newest");
+    const hpg = new HN_Page(page,"https://news.ycombinator.com/newest");
     await hpg.runPipeline(false);    
     await browser.close();      
 }
