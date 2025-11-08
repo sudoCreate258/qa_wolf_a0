@@ -1,8 +1,11 @@
 import { chromium } from "playwright";
+import { firefox }  from "playwright";
+import { webkit }   from "playwright";
+
 import { HN_Page } from './hn_page_base.js'; 
 
 export class HN_Page_Optim extends HN_Page {
-    constructor(p, u="https://news.ycombinator.com/newest") {
+    constructor(p, u) {
         super(p, u);
     }
         
@@ -18,27 +21,12 @@ export class HN_Page_Optim extends HN_Page {
         let results = []
         for (let i = 0; i < rowsSubset.length; i += batchSize) {
             const batch = rowsSubset.slice(i, i + batchSize);
-            const promises = batch.map(row => this.parseRow(row));
+            const batchPromises = batch.map(row => this.parseRow(row));
 
-            const parsedEntries = await Promise.all(promises);
+            const parsedEntries = await Promise.all(batchPromises);
             results.push(...parsedEntries);
         }
         this.entries.push(...results);
-    }
-
-    async parseRow(r) {
-        const raw_title = r.locator('span.titleline > a');
-        let str = 'xpath=following-sibling::tr[1]//span[@class="age"]';
-        const raw_age = r.locator(str);
-                        
-        const [sub_title, link, raw_age_title] = await Promise.all([
-                    raw_title.innerText(), 
-                    raw_title.getAttribute('href'), 
-                    raw_age.getAttribute('title')
-        ]);
-
-        let epoch_time = raw_age_title;             
-        return { sub_title, epoch_time, link };
     }
 
     async viewMore() {  // CVE-2023-5217 mitigation
@@ -55,12 +43,17 @@ export class HN_Page_Optim extends HN_Page {
     }
 }
 
-export async function sortHackerNewsArticles() {
+export async function sortHackerNewsArticles(page) {
+    const hpg = new HN_Page_Optim(page);
+    await hpg.runPipeline();    
+}
+
+export async function old_sortHackerNewsArticles() {
     const browser = await chromium.launch({ headless: true });
     const context = await browser.newContext();
     const page    = await context.newPage();
 
     const hpg = new HN_Page_Optim(page);
-    await hpg.runPipeline(false);    
+    await hpg.runPipeline();    
     await browser.close();      
 }

@@ -1,17 +1,17 @@
 import { chromium } from "playwright";
 
 export class HN_Page{ 
-    constructor(p,u){ 
+    constructor(p,u="https://news.ycombinator.com/newest"){ 
         this.entries = [];
         this.page = p;
         this.url  = u;
         this.rlocate = null;
         this.mLocate = null;
-    }   //TODO validate + print first 100 articles (new to old)
-
-    validateEntries(){
-        this.entries.sort((a,b) => b.epoch_time - a.epoch_time);
     }
+
+    validateEntries(){ 
+        this.entries.sort((a,b) => b.epoch_time - a.epoch_time);
+    }   //TODO validate + print first 100 articles (new to old)
 
     async runPipeline(debugFlag=true){ 
         await this.visitPage();
@@ -21,9 +21,7 @@ export class HN_Page{
         } 
         this.validateEntries();
         
-        if(debugFlag){
-            this.printToScreen();
-        }
+        if(!debugFlag) this.printToScreen();
     }   
 
     async visitPage(){
@@ -79,12 +77,17 @@ export class HN_Page{
     }
 }
 
-export async function sortHackerNewsArticles() {
-    const browser = await chromium.launch({ headless: false });
+export async function sortHackerNewsArticles(page) {
+    const hpg = new HN_Page(page);
+    await hpg.runPipeline();    
+}
+
+export async function old_sortHackerNewsArticles() {
+    const browser = await chromium.launch({ headless: true });
     const context = await browser.newContext();
     const page    = await context.newPage();
 
     const hpg = new HN_Page(page,"https://news.ycombinator.com/newest");
-    await hpg.runPipeline(false);    
+    await hpg.runPipeline();    
     await browser.close();      
 }
