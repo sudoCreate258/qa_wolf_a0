@@ -18,7 +18,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20' # Use a stable, recent version
+        node-version: '20'
 
     # 3. Install project dependencies
     - name: Install Dependencies
@@ -28,13 +28,21 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
 
-    # 5. Run the specific performance test file
-    # This step will fail (exit with 1) if the assertions within the test file fail (e.g., duration exceeds the threshold).
-    - name: Run Performance Tests
-      run: npx playwright test tests/new_pipeline_perf.spec.js
+    # 5. Run the specific performance test file multiple times sequentially (5 runs)
+    # The loop ensures we get 5 independent data points for averaging/consistency checks.
+    # --workers=1 prevents flaky parallel runs which are unsuitable for performance metrics.
+    - name: Run Performance Tests 5 Times for Consistency
+      run: |
+        set -e # Exit immediately if any test run fails (a regression occurred)
 
-    # 6. Optional: Upload the Playwright report for detailed analysis if needed
-    # This runs even if the previous step fails (if: always())
+        for i in {1..5}; do
+          echo "--- Starting Independent Performance Run $i of 5 ---"
+          # We use --workers=1 to ensure sequential execution for reliable performance measurement.
+          npx playwright test tests/new_pipeline_perf.spec.js --workers=1
+          echo "--- Run $i Complete ---"
+        done
+
+    # 6. Upload the Playwright report
     - uses: actions/upload-artifact@v4
       if: always()
       with:
