@@ -5,7 +5,7 @@ const MEMORY_TOLERANCE_FACTOR = 0.95;
 
 export default defineConfig({
     testDir: './tests',
-    fullyParallel: true, // Use Playwright parallelism across projects
+    fullyParallel: true,  
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 0,
     workers: process.env.CI ? 1 : undefined,
