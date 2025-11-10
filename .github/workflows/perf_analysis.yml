@@ -32,8 +32,7 @@ jobs:
     # The loop ensures we get 5 independent data points for averaging/consistency checks.
     # --workers=1 prevents flaky parallel runs which are unsuitable for performance metrics.
     - name: Run Performance Tests 5 Times for Consistency
-      run: |
-          npx playwright test tests/new_pipeline_perf.spec.js --workers=1
+      run: npx playwright test tests/new_pipeline_perf.spec.js --workers=1
 
     # 6. Upload the Playwright report
     - uses: actions/upload-artifact@v4
