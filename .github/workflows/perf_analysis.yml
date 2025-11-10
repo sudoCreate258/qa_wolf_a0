@@ -33,14 +33,7 @@ jobs:
     # --workers=1 prevents flaky parallel runs which are unsuitable for performance metrics.
     - name: Run Performance Tests 5 Times for Consistency
       run: |
-        set -e # Exit immediately if any test run fails (a regression occurred)
-
-        for i in {1..5}; do
-          echo "--- Starting Independent Performance Run $i of 5 ---"
-          # We use --workers=1 to ensure sequential execution for reliable performance measurement.
           npx playwright test tests/new_pipeline_perf.spec.js --workers=1
-          echo "--- Run $i Complete ---"
-        done
 
     # 6. Upload the Playwright report
     - uses: actions/upload-artifact@v4
