@@ -16,7 +16,7 @@ export class HN_Page_Optim extends HN_Page {
                     
         if (rowsToProcess <= 0) return;
 
-        const batchSize = typeof THROTTLE_LIMIT !== 'undefined' ? THROTTLE_LIMIT : 10;
+        const batchSize = process.env.THROTTLE_LIMIT;
         const rowsSubset = rows.slice(0, rowsToProcess);
         
         let results = []
@@ -33,14 +33,14 @@ export class HN_Page_Optim extends HN_Page {
         }
     }
 
-    async viewMore() {  // CVE-2023-5217 mitigation
+    async viewMore() {  
         const visible = await this.mlocate.isVisible();
                         
         if (visible) {
             await Promise.all([ 
-                this.mlocate.click(),
+                this.mlocate.click(), // CVE-2023-5217 mitigation
                 this.page.waitForLoadState('domcontentloaded'),
-             ]);
+             ]);        
             return true;
         }   
         return false;
