@@ -2,9 +2,7 @@ name: Playwright Performance & Resilience CI
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches: [ ci_cd ]
 
 jobs:
   performance_check:
@@ -26,18 +24,18 @@ jobs:
 
     # 4. Install Playwright browsers required to run the test
     - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+      run: npx playwright install 
 
     # 5. Run the specific performance test file multiple times sequentially (5 runs)
     # The loop ensures we get 5 independent data points for averaging/consistency checks.
     # --workers=1 prevents flaky parallel runs which are unsuitable for performance metrics.
     - name: Run Performance Tests 5 Times for Consistency
-      run: npx playwright test tests/new_pipeline_perf.spec.js --workers=1
+      run: npx playwright test tests/new_pipeline_perf.spec.js --reporter=html --workers=1
 
     # 6. Upload the Playwright report
-    - uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: playwright-performance-report
-        path: playwright-report/
-        retention-days: 7
+    #- uses: actions/upload-artifact@v4
+    #  if: always()
+    #  with:
+    #    name: playwright-performance-report
+    #    path: playwright-report/
+    #   retention-days: 7
