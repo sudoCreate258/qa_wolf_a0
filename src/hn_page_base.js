@@ -78,12 +78,12 @@ export class HN_Page {
     }
 }
 
-export async function sortHackerNewsArticles(page) {
+export async function testSortHN(page) {
     const hpg = new HN_Page(page);
     await hpg.runPipeline();
 }
 
-export async function old_sortHackerNewsArticles() {
+export async function sortHackerNewsArticles() {
     const browser = await chromium.launch({ headless: true });
     const context = await browser.newContext();
     const page = await context.newPage();

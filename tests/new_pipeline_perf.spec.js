@@ -1,17 +1,17 @@
 import { test, expect } from '@playwright/test';
 import { withMetrics, calcImproMet, printImprov, printCompTable } from '../src/withMetrics.js';
 
-import { sortHackerNewsArticles as baselineRun } from '../src/hn_page_base.js';
-import { sortHackerNewsArticles as stage1Run } from '../src/hn_page_optim.js';
-import { sortHackerNewsArticles as stage2Run } from '../src/hn_page_debug.js';
+import { testSortHN as baselineRun } from '../src/hn_page_base.js';
+import { testSortHN as stage1Run } from '../src/hn_page_optim.js';
+import { testSortHN as stage2Run } from '../src/hn_page_debug.js';
 
 const THROTTLE_LIMIT = 10;
 const MEMORY_TOLERANCE_FACTOR = 0.95;
 
 const PIPELINE_RUNNERS = [
     { name: 'Baseline', func: baselineRun },
-    { name: 'Stage 1', func: stage1Run },
-    { name: 'Stage 2', func: stage2Run },
+    { name: 'Stage 1',  func: stage1Run },
+    { name: 'Stage 2',  func: stage2Run },
 ];
 
 test.describe('Hacker News Pipeline Optimization Analysis (Hardcoded Loop)', () => {
@@ -33,11 +33,11 @@ test.describe('Hacker News Pipeline Optimization Analysis (Hardcoded Loop)', () 
             }
 
             baselineMetrics = metricsResult[0].metrics;
-            stage1Metrics = metricsResult[1].metrics;
-            stage2Metrics = metricsResult[2].metrics;
+            stage1Metrics   = metricsResult[1].metrics;
+            stage2Metrics   = metricsResult[2].metrics;
 
             const baselineToStage1 = calcImproMet(baselineMetrics, stage1Metrics);
-            const stage1ToStage2 = calcImproMet(stage1Metrics, stage2Metrics);
+            const stage1ToStage2   = calcImproMet(stage1Metrics,   stage2Metrics);
             const baselineToStage2 = calcImproMet(baselineMetrics, stage2Metrics);
 
             printImprov(baselineToStage1, stage1ToStage2, baselineToStage2);
