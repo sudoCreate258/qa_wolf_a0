@@ -2,43 +2,41 @@ import * as v8 from 'v8';
 import { performance } from 'perf_hooks';
 import * as os from 'os';
 
-export async function withMetrics(label,fn, ...args) {
-    // Baseline measurement (including optional garbage collection for consistency)
+/**
+ * Runs a function while measuring performance, memory, and async metrics.
+ */
+export async function withMetrics(label, fn, ...args) {
     if (global.gc) global.gc();
-    // Yield to the event loop to ensure clean memory measurements
     await new Promise(resolve => setTimeout(resolve, 50));
-    
+
     const start = performance.now();
-    const startNs = process.hrtime.bigint();
     const memoryStart = process.memoryUsage().heapUsed;
-    
-    let promiseCount = 0; // Track Promise.all/batches
-    let totalPromiseSteps = 0; 
+
+    let promiseCount = 0;
+    let totalPromiseSteps = 0;
+
     const originalPromiseAll = Promise.all;
     const originalPromiseThen = Promise.prototype.then;
-    
-    // 1. Instrumentation for Promise.all (Batches)
-    Promise.all = function(...args) {
+
+    Promise.all = function (...args) {
         promiseCount++;
         return originalPromiseAll.apply(this, args);
     };
 
-    // 2. Instrumentation for Promise.prototype.then (Total Promise Steps)
-    Promise.prototype.then = function(...args) {
+    Promise.prototype.then = function (...args) {
         totalPromiseSteps++;
-        const resultPromise = originalPromiseThen.apply(this, args);
-        return resultPromise;
+        return originalPromiseThen.apply(this, args);
     };
-    
+
     let result;
     let memoryEnd;
     let heapEnd;
     let end;
-    
+
     try {
         result = await fn(...args);
     } catch (e) {
-        console.error(`Error in function ${e}:`);
+        console.error(`Error in function ${label}: ${e.message}`);
         throw e;
     } finally {
         Promise.all = originalPromiseAll;
@@ -52,31 +50,24 @@ export async function withMetrics(label,fn, ...args) {
     const durationMs = end - start;
     const memoryDeltaKB = (memoryEnd - memoryStart) / 1024;
     const heapUsedMB = heapEnd / (1024 * 1024);
-    
-    // Calculate Async Ratio safely
     const asyncRatio = totalPromiseSteps > 0 ? promiseCount / totalPromiseSteps : 0;
 
     return {
         result,
         metrics: {
             label,
-            durationMs: durationMs,
-            memoryDeltaKB: memoryDeltaKB,
+            durationMs,
+            memoryDeltaKB,
             heapUsedMB: heapUsedMB.toFixed(2),
             promiseBatches: promiseCount,
-            sequentialAwaits: totalPromiseSteps, 
+            sequentialAwaits: totalPromiseSteps,
+            asyncRatio
         }
     };
 }
 
-
 /**
- * Calculates the percentage improvement metrics between a baseline run and an improved run.
- * Improvement is calculated as: ((Baseline Metric - Improved Metric) / Baseline Metric) * 100
- *
- * @param {Object} baseline - The baseline run metrics object.
- * @param {Object} improved - The improved run metrics object.
- * @returns {Object} An object containing the formatted improvement metrics.
+ * Calculates improvement metrics between two runs.
  */
 export function calcImproMet(baseline, improved) {
     const timeImprovement = ((baseline.durationMs - improved.durationMs) / baseline.durationMs) * 100;
@@ -87,43 +78,38 @@ export function calcImproMet(baseline, improved) {
     const heapFootprintReduction = ((baselineHeapMB - improvedHeapMB) / baselineHeapMB) * 100;
 
     return {
-        'Label': `${baseline.label} -> ${improved.label}`,
-        'Time': timeImprovement.toFixed(2) + '%',
-        'Memory Delta': memoryDeltaImprovement.toFixed(2) + '%',
-        'Heap Footprint': heapFootprintReduction.toFixed(2) + '%',
+        Label: `${baseline.label} -> ${improved.label}`,
+        Time: `${timeImprovement.toFixed(2)}%`,
+        'Memory Delta': `${memoryDeltaImprovement.toFixed(2)}%`,
+        'Heap Footprint': `${heapFootprintReduction.toFixed(2)}%`
     };
 }
 
 /**
- * Prints a summary of the calculated improvement metrics to the console.
+ * Prints a summary of calculated improvement metrics.
  */
 export function printImprov(baselineToStage1, stage1ToStage2, baselineToStage2) {
-    // Log the main overall improvement result
     const overall = baselineToStage2;
-    console.log(`\n🎯 Overall Improvements (${overall.Label}): Time: ${overall.Time}, Memory Delta: ${overall['Memory Delta']}, Heap Footprint: ${overall['Heap Footprint']}`);
+    console.log(`\n🎯 Overall Improvements (${overall.Label}):`);
+    console.log(`Time: ${overall.Time}, Memory Delta: ${overall['Memory Delta']}, Heap Footprint: ${overall['Heap Footprint']}`);
 
     console.log('\n🚀 PERFORMANCE IMPROVEMENT SUMMARY:');
     console.table([baselineToStage1, stage1ToStage2, baselineToStage2]);
 }
 
 /**
- * Formats and prints an array of raw metric objects as a console table.
- *
- * @param {Object[]} metricsArray - An array of raw metric objects.
+ * Prints raw metrics as a comparison table.
  */
 export function printCompTable(metricsArray) {
-    if (!metricsArray || metricsArray.some(m => !m)) {
-        return;
-    }
+    if (!metricsArray || metricsArray.some(m => !m)) return;
 
     const comparisonTable = metricsArray.map(m => ({
-        'Label': m.label,
+        Label: m.label,
         'Duration (ms)': m.durationMs.toFixed(2),
         'Memory Delta (KB)': m.memoryDeltaKB.toFixed(2),
         'Heap Footprint (MB)': m.heapUsedMB,
         'Promise Batches': m.promiseBatches,
         'Total Promise Steps': m.sequentialAwaits,
-        //'Async Ratio': m.asyncRatio,
     }));
 
     console.log('\n📊 FINAL METRICS TABLE:');
