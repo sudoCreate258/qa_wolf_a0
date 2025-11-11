@@ -20,7 +20,6 @@ export class HN_Page_Debug extends HN_Page_Optim{
         const moreLink = this.page.locator('a.morelink');
 
         do{ 
-            try{
             const rows = await this.rlocate.all();
             const rowsToProcess = Math.min(100 - this.entries.length, rows.length);
             if (rowsToProcess === 0) break; 
@@ -38,10 +37,6 @@ export class HN_Page_Debug extends HN_Page_Optim{
             if(morePageFlag && await moreLink.isVisible()) 
                 await moreLink.click(); // SEQUENTIAL BOTTLENECK: Handle Navigation to the next page
             else break; 
-            }catch(error){
-                console.warn(`[GRACEFUL EXIT - HN_Page] Error during row extraction (rlocate.all or parseRow). Error: ${error.message}`);
-                break;
-            }
 
         }while (this.entries.length < 100);
     }

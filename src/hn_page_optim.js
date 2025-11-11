@@ -10,7 +10,6 @@ export class HN_Page_Optim extends HN_Page {
     }
         
     async extractEntries() {
-        try{
         const rows = await this.rlocate.all();
         const rowsToProcess = Math.min(100 - this.entries.length, rows.length);
                     
@@ -28,9 +27,6 @@ export class HN_Page_Optim extends HN_Page {
             results.push(...parsedEntries);
         }
         this.entries.push(...results);
-        } catch(error){
-            console.warn(`[GRACEFUL EXIT - HN_Page] Error during row extraction (rlocate.all or parseRow). Error: ${error.message}`);
-        }
     }
 
     async viewMore() {  

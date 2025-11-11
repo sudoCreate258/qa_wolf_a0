@@ -13,15 +13,11 @@ export class HN_Page{
         this.entries.sort((a,b) => b.epoch_time - a.epoch_time);
     }   //TODO validate + print first 100 articles (new to old)
 
-     async runPipeline(debugFlag=true){ 
+    async runPipeline(debugFlag=true){ 
         await this.visitPage();
         for(let x=0; x<4; x++){
             await this.extractEntries();
             const clicked = await this.viewMore();
-            if(!clicked){
-                console.log('error in pagination [more]');
-                break;
-            }
         } 
         this.validateEntries();
         
@@ -54,7 +50,6 @@ export class HN_Page{
     }
 
     async extractEntries(){
-        try{
         const rows = await this.rlocate.all();
         for(const r of rows){
             let entrySize = this.entries.length;
@@ -63,9 +58,6 @@ export class HN_Page{
             const parsed = sizeFlag ? await this.parseRow(r) : null;
             if(sizeFlag) this.entries.push(parsed);
             else         break;
-        }
-        }catch(error){
-            console.warn(`[GRACEFUL EXIT - HN_Page] Error during row extraction (rlocate.all or parseRow). Error: ${error.message}`);
         }
     }
 
