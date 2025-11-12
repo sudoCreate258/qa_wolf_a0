@@ -1,6 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const PERFORMANCE_THROTTLE_LIMIT = 50;
 const MEMORY_TOLERANCE_FACTOR = 0.95;
 
 export default defineConfig({

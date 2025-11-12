@@ -2,7 +2,7 @@ import { HN_Page_Optim } from './hn_page_optim.js';
 import { chromium } from "playwright";
 
 export class HN_Page_Debug extends HN_Page_Optim{ 
-    constructor(p, u) {
+    constructor(p) {
         super(p);
     }
 
@@ -15,8 +15,7 @@ export class HN_Page_Debug extends HN_Page_Optim{
     }   
 
     async extractEntries() {
-        const batchSize = process.env.THROTTLE_LIMIT;
-        //const batchSize = typeof  !== 'undefined' ? process.env.THROTTLE_LIMIT : 5; 
+        const batchSize = this.tLimit; 
         const moreLink = this.page.locator('a.morelink');
 
         do{ 
@@ -48,7 +47,8 @@ export class HN_Page_Debug extends HN_Page_Optim{
 }
 
 export async function testSortHN(page) {
-    const hpg = new HN_Page_Debug(page);
+    let throttle = 5;
+    const hpg = new HN_Page_Debug(page,throttle);
     await hpg.runPipeline();    
 }
 

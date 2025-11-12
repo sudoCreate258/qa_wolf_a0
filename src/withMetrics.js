@@ -18,6 +18,7 @@ export async function withMetrics(label, fn, ...args) {
     const originalPromiseAll = Promise.all;
     const originalPromiseThen = Promise.prototype.then;
 
+    // Instrumentation for Promise usage
     Promise.all = function (...args) {
         promiseCount++;
         return originalPromiseAll.apply(this, args);
@@ -39,6 +40,7 @@ export async function withMetrics(label, fn, ...args) {
         console.error(`Error in function ${label}: ${e.message}`);
         throw e;
     } finally {
+        // Restore original Promise methods
         Promise.all = originalPromiseAll;
         Promise.prototype.then = originalPromiseThen;
 
@@ -87,14 +89,30 @@ export function calcImproMet(baseline, improved) {
 
 /**
  * Prints a summary of calculated improvement metrics.
+ * Now takes only two arguments: Baseline -> Stage 1 (incremental gain) and
+ * Baseline -> Stage 2 (total gain).
+ * * @param {object} baselineToStage1 - Metrics comparing Baseline to Stage 1.
+ * @param {object} baselineToStage2 - Metrics comparing Baseline to Stage 2.
  */
-export function printImprov(baselineToStage1, stage1ToStage2, baselineToStage2) {
-    const overall = baselineToStage2;
-    console.log(`\n🎯 Overall Improvements (${overall.Label}):`);
-    console.log(`Time: ${overall.Time}, Memory Delta: ${overall['Memory Delta']}, Heap Footprint: ${overall['Heap Footprint']}`);
+export function printImprov(baselineToStage1, baselineToStage2) {
+    // Collect the two expected data points
+    const tableData = [baselineToStage1, baselineToStage2].filter(d => d);
+
+    if (tableData.length === 0) {
+        console.log('\n🚀 PERFORMANCE IMPROVEMENT SUMMARY: No improvement metrics provided.');
+        return;
+    }
+
+    // Use Baseline -> Stage 2 for the overall summary if available, otherwise use Stage 1.
+    const overall = baselineToStage2 || baselineToStage1; 
+    
+    if (overall) {
+        console.log(`\n🎯 Overall Improvements (${overall.Label}):`);
+        console.log(`Time: ${overall.Time}, Memory Delta: ${overall['Memory Delta']}, Heap Footprint: ${overall['Heap Footprint']}`);
+    }
 
     console.log('\n🚀 PERFORMANCE IMPROVEMENT SUMMARY:');
-    console.table([baselineToStage1, stage1ToStage2, baselineToStage2]);
+    console.table(tableData);
 }
 
 /**
