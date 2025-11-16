@@ -2,14 +2,14 @@ name: Playwright Performance & Resilience CI
 
 on:
   push:
-    branches: [ ci_cd,testing ]
+    branches: [ ci_cd, testing ]
   pull_request:
-    branches: [ ci_cd,testing ]
+    branches: [ ci_cd, testing ]
 
 jobs:
   performance_check:
     runs-on: ubuntu-latest
-    
+
     steps:
     # 1. Checkout the repository code
     - uses: actions/checkout@v4
@@ -20,12 +20,15 @@ jobs:
       with:
         node-version: '20'
 
-    # 3. Install project dependencie + Playwright browsers
+    # 3. Install project dependencies + Playwright browsers
     - name: Install Dependencies
+      # FIXED: Combined multiple 'run' commands into a single, chained execution
       run: |
+        # Make scripts executable
         chmod +x install_scripts.sh
-        chmod +x ./update_scipt.sh 
-      run: |
+        chmod +x ./update_script.sh
+        
+        # Execute scripts
         ./install_scripts.sh
         ./update_script.sh
 
@@ -33,5 +36,5 @@ jobs:
       run: npx playwright install --with-deps
 
     # 4. Run the specific performance test sequentially
-    - name: Run Performance Tests 
+    - name: Run Performance Tests
       run: npx playwright test tests/new_pipeline_perf.spec.js --reporter=list --workers=1
