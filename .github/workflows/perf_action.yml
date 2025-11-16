@@ -22,8 +22,12 @@ jobs:
 
     # 3. Install project dependencie + Playwright browsers
     - name: Install Dependencies
-      run: chmod +x install_scripts.sh && chmod +x ./update_scipt.sh 
-      run: ./install_scripts.sh && ./update_script.sh
+      run: |
+        chmod +x install_scripts.sh
+        chmod +x ./update_scipt.sh 
+      run: |
+        ./install_scripts.sh
+        ./update_script.sh
 
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
