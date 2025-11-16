@@ -1,0 +1,33 @@
+name: Playwright Performance & Resilience CI
+
+on:
+  push:
+    branches: [ ci_cd,testing ]
+  pull_request:
+    branches: [ ci_cd,testing ]
+
+jobs:
+  performance_check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # 1. Checkout the repository code
+    - uses: actions/checkout@v4
+
+    # 2. Setup Node.js environment
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    # 3. Install project dependencie + Playwright browsers
+    - name: Install Dependencies
+      run: chmod +x install_scripts.sh && chmod +x ./update_scipt.sh 
+      run: ./install_scripts.sh && ./update_script.sh
+
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+
+    # 4. Run the specific performance test sequentially
+    - name: Run Performance Tests 
+      run: npx playwright test tests/new_pipeline_perf.spec.js --reporter=list --workers=1
