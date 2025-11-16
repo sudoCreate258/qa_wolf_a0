@@ -2,9 +2,9 @@ name: Playwright Performance & Resilience CI
 
 on:
   push:
-    branches: [ ci_cd, testing ]
+    branches: [ ci_cd, testing, main ]
   pull_request:
-    branches: [ ci_cd, testing ]
+    branches: [ ci_cd, testing, main ]
 
 jobs:
   performance_check:
@@ -20,21 +20,20 @@ jobs:
       with:
         node-version: '20'
 
-    # 3. Install project dependencies + Playwright browsers
-    - name: Install Dependencies
-      # FIXED: Combined multiple 'run' commands into a single, chained execution
+    # 3. Install project dependencies
+    - name: Install Project Dependencies (npm ci)
+      run: npm ci
+
+    # 4. Run Custom Update Script (to update global npm version)
+    - name: Run Custom Update Script
       run: |
-        # Make scripts executable
-        chmod +x install_scripts.sh
         chmod +x ./update_script.sh
-        
-        # Execute scripts
-        ./install_scripts.sh
         ./update_script.sh
 
+    # 5. Install Playwright Browsers
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
 
-    # 4. Run the specific performance test sequentially
+    # 6. Run the specific performance test sequentially
     - name: Run Performance Tests
       run: npx playwright test tests/new_pipeline_perf.spec.js --reporter=list --workers=1
