@@ -17,7 +17,6 @@ export async function withMetrics(label, fn, ...args) {
     const originalPromiseAll = Promise.all;
     const originalPromiseThen = Promise.prototype.then;
 
-    // Instrumentation for Promise usage
     Promise.all = function (...args) {
         promiseCount++;
         return originalPromiseAll.apply(this, args);
@@ -39,7 +38,6 @@ export async function withMetrics(label, fn, ...args) {
         console.error(`Error in function ${label}: ${e.message}`);
         throw e;
     } finally {
-        // Restore original Promise methods
         Promise.all = originalPromiseAll;
         Promise.prototype.then = originalPromiseThen;
 
