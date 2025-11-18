@@ -1,6 +1,5 @@
 import * as v8 from 'v8';
 import { performance } from 'perf_hooks';
-import * as os from 'os';
 
 /**
  * Runs a function while measuring performance, memory, and async metrics.
