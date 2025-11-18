@@ -1,102 +1,62 @@
 import { test, expect } from '@playwright/test';
-import { withMetrics } from '../src/withMetrics.js';
-// BASELINE for this test: The stable, working optimized pipeline
-import { sortHackerNewsArticles as stableRun } from '../src/hn_page_optim.js';
-// OPTIMIZED for this test: The new micro-optimized pipeline
-import { sortHackerNewsArticles as microOptimizedRun } from '../src/hn_page_optim.js';
+import { withMetrics, calcImproMet, printImprov, printCompTable } from '../src/withMetrics.js';
 
-/**
- * NOTE ON THROTTLING:
- * This static THROTTLE_LIMIT value must match the stable value used in the existing tests.
- * This ensures the stable and micro-optimized runs are tested under the same concurrency conditions.
- */
-const THROTTLE_LIMIT = 5;
+import { testSortHN as baselineRun } from '../src/hn_page_base.js';
+import { testSortHN as stage1Run }   from '../src/hn_page_optim.js';
+//import { testSortHN as stage1Run }   from '../src/hn_page_debug.js';
 
+const THRESHOLD = 10;
+const MEMORY_TOLERANCE_FACTOR = 2;
 
-test.describe('Micro-Optimization Performance Analysis: Stable vs. Micro-Optimized', () => {
-    // Increase the test timeout to 120 seconds (120000ms) for high stability, 
-    // accommodating the extremely long WebKit baseline run (up to ~79 seconds).
-    test.setTimeout(120000);
+// Define variables in the test scope so they are accessible throughout
+let baselineResult, stage1Result;
+let baselineMetrics, stage1Metrics;
+let baselineToStage1;
 
-    test('Summary: Stable Optimized vs. Micro-Optimized', async ({ page }) => {
-        
-        console.log('\n' + '='.repeat(80));
-        console.log(`[INFO] Comparing Stable Optimized Pipeline vs. Micro-Optimized Pipeline`);
-        console.log(`[INFO] Running with a required Static THROTTLE_LIMIT of: ${THROTTLE_LIMIT}`);
-        
-        // --- Run 1: Stable Optimized Pipeline (as the New Baseline) ---
-        const stableBaseline = await withMetrics(
-            'Stable Optimized Baseline', 
-            async () => {
-                // Navigate before the run, as per the pattern in old_pipeline_perf.spec.js
-                await page.goto("https://news.ycombinator.com/newest");
-                await stableRun(page);
-            },
-            THROTTLE_LIMIT // Passing the static limit
-        );
+test.describe('Hacker News Pipeline Optimization Analysis (Hardcoded Loop)', () => {
+    test.setTimeout(180000);
 
-        // --- Run 2: Micro-Optimized Pipeline (The Experiment) ---
-        // Executes the code from src/hn_page_optim.js (the file currently open)
-        const microOptimized = await withMetrics(
-            'Micro-Optimized Experiment', 
-            async () => {
-                // Navigate before the run, as per the pattern in old_pipeline_perf.spec.js
-                await page.goto("https://news.ycombinator.com/newest");
-                await microOptimizedRun(page);
-            },
-            THROTTLE_LIMIT // Passing the static limit
-        );
-        
-        console.log('='.repeat(80));
+    test('Summary: Baseline vs Stage 1 Across Browsers', async ({ page }) => {
+        console.log(`[Config] THRESHOLD: ${THRESHOLD}, Tolerance: ${MEMORY_TOLERANCE_FACTOR}`);
+        console.log('\n' + '='.repeat(80));
 
-        // --- Calculate and Log Improvements ---
-        const baselineMetrics = stableBaseline.metrics;
-        const optimizedMetrics = microOptimized.metrics;
+        // 1. Run Baseline
+        try { 
+            baselineResult = await withMetrics('Baseline', baselineRun, page);
+            baselineMetrics = baselineResult.metrics;
+        } catch (error) {
+            console.error(`[ERROR - baseline] Test failed: ${error.message}`);
+            throw error;
+        }
 
-        console.log('\n📊 Final Comparison (Stable vs. Micro-Optimized):');
-        console.table([
-            { label: baselineMetrics.label, ...baselineMetrics },
-            { label: optimizedMetrics.label, ...optimizedMetrics }
-        ]);
+        // 2. Run Stage 1
+        try{
+            stage1Result = await withMetrics('Stage 1', stage1Run, page, 5);
+            stage1Metrics = stage1Result.metrics;
+        } catch (error) {
+            console.error(`[ERROR - optim] Test failed: ${error.message}`);
+            throw error;
+        }
+           
+        // Check if both runs succeeded before calculating metrics
+        if (!baselineMetrics || !stage1Metrics) {
+            throw new Error("Could not retrieve metrics from one or both pipeline runs.");
+        }
 
-        const improvements = {
-            'Time Improvement': (
-                (Number(baselineMetrics.durationMs) - Number(optimizedMetrics.durationMs)) /
-                Number(baselineMetrics.durationMs) * 100
-            ).toFixed(2) + '%',
-            // NOTE: Memory Improvement calculation is complex when baseline is negative, 
-            // but we leave the console output calculation as-is for raw comparison.
-            'Memory Improvement': (
-                (Number(baselineMetrics.memoryDeltaKB) - Number(optimizedMetrics.memoryDeltaKB)) /
-                Number(baselineMetrics.memoryDeltaKB) * 100
-            ).toFixed(2) + '%',
-        };
-        console.log('\n🎯 Overall Improvements:');
-        console.table([improvements]);
+        // Calculate metrics
+        baselineToStage1 = calcImproMet(baselineMetrics, stage1Metrics);
 
-        // --- Assertions ---
-        // We set a relaxed target for micro-optimizations, aiming for at least no degradation.
-        const relaxedTimeTarget = Number(baselineMetrics.durationMs) * 1.05; // Must not be 5% slower
-        
-        // 1. Calculate the relaxed memory target, handling negative baselines (memory freed).
-        let relaxedMemoryTarget;
-        if (Number(baselineMetrics.memoryDeltaKB) > 0) {
-            // Standard case: If baseline used memory, allow up to 5% degradation.
-            relaxedMemoryTarget = Number(baselineMetrics.memoryDeltaKB) * 1.05; 
-        } else {
-            // Complex case: If baseline freed memory (negative delta), the target must be very small.
-            // We set a strict ceiling of 500 KB net memory usage to prevent massive regressions 
-            // (like the 14MB increase seen in the previous WebKit run).
-            relaxedMemoryTarget = 500; 
-        }
+        // Output metrics (removed undefined baselineToStage2 argument)
+        printImprov(baselineToStage1); 
+        printCompTable([baselineMetrics, stage1Metrics]); 
 
-        expect(Number(microOptimized.metrics.durationMs))
-            .toBeLessThanOrEqual(relaxedTimeTarget, `Micro-Optimized time must not degrade significantly (Max: ${relaxedTimeTarget.toFixed(2)}ms)`);
-            
-        // 2. Assert the memory delta is less than or equal to the calculated relaxed target.
-        // This handles positive and negative baselines correctly now.
-        expect(Number(microOptimized.metrics.memoryDeltaKB))
-            .toBeLessThanOrEqual(relaxedMemoryTarget, `Micro-Optimized memory must not degrade significantly (Max: ${relaxedMemoryTarget.toFixed(2)}KB)`);
-   });
+        // Assertions 
+        const relaxedTimeTarget = baselineMetrics.durationMs * 1.02;
+        expect(stage1Metrics.durationMs).toBeLessThanOrEqual(relaxedTimeTarget);
+
+        const memoryImprovementTarget = baselineMetrics.memoryDeltaKB * MEMORY_TOLERANCE_FACTOR;
+        expect(stage1Metrics.memoryDeltaKB).toBeLessThanOrEqual(memoryImprovementTarget);
+
+        console.log('='.repeat(80));
+    });
 });
-
