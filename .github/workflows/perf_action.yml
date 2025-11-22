@@ -36,4 +36,4 @@ jobs:
 
     # 6. Run the specific performance test sequentially
     - name: Run Performance Tests
-      run: npx playwright test tests/new_pipeline_perf.spec.js --reporter=list --workers=1
+      run: npx playwright test tests/stable_pipeline_perf.spec.js --reporter=list --workers=1
