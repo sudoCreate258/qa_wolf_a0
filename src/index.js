@@ -8,7 +8,7 @@ async function sortHackerNewsArticles() {
     const page = await context.newPage();
 
     let hpg = new HN_Page(page,"https://news.ycombinator.com/newest");
-    await hpg.runPipeline();    
+    await hpg.runPipeline(false);    
     await browser.close();      
 }
 

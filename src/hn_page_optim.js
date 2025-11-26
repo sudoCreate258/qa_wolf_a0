@@ -17,12 +17,6 @@ export class HN_Page_Optim extends HN_Page {
         try {
             const allPageEntries = await this.page.evaluate(() => {
                 
-                /**
-                 * Parses a single row element (r) entirely in the browser using 
-                 * native DOM methods for speed.
-                 * @param {Element} r - The <tr> element corresponding to 'tr.athing'.
-                 * @returns {Object} Extracted data.
-                 */
                 const parseRow = (r) => {
                     const titleLink = r.querySelector("span.titleline > a");
                     const sub_title = titleLink?.textContent.trim() || "";
@@ -53,7 +47,11 @@ export class HN_Page_Optim extends HN_Page {
                 return Array.from(rowLocators).map(parseRow);
             });
 
-            this.entries.push(...allPageEntries);
+            if (this.entries.length < 90)
+                this.entries.push(...allPageEntries);
+            else
+                this.entries.push(...allPageEntries.slice(0,10));
+
         } catch (error) {
             console.error("[ULTRA SURGICAL ERROR] Failed to extract entries via evaluate:", error.message);
         }
