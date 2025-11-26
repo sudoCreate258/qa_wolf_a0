@@ -15,10 +15,8 @@ export class HN_Page_Optim extends HN_Page {
 
     async extractEntries() {
         try {
-            // 2. Optimized Extraction (Single IPC Trip)
             const allPageEntries = await this.page.evaluate(() => {
                 
-                // --- INTERNAL parseRow FUNCTION (Browser Context Only) ---
                 /**
                  * Parses a single row element (r) entirely in the browser using 
                  * native DOM methods for speed.
@@ -26,17 +24,14 @@ export class HN_Page_Optim extends HN_Page {
                  * @returns {Object} Extracted data.
                  */
                 const parseRow = (r) => {
-                    // 1. Title and Link
                     const titleLink = r.querySelector("span.titleline > a");
                     const sub_title = titleLink?.textContent.trim() || "";
                     const link = titleLink?.getAttribute('href') || "";
 
-                    // 2. Complex Sibling/Timestamp Extraction (Equivalent of following-sibling::tr[1])
                     const subtextRow = r.nextElementSibling; // The <tr> containing subtext/age
                     const ageSpan = subtextRow?.querySelector('span.age');
                     const raw_age_title = ageSpan?.getAttribute('title'); 
                     
-                    // 3. String manipulation to get epoch_time
                     let epoch_time = '';
                     if (raw_age_title) {
                         try {
@@ -52,15 +47,12 @@ export class HN_Page_Optim extends HN_Page {
                     
                     return { sub_title, epoch_time, link };
                 }
-                // --- END INTERNAL parseRow FUNCTION ---
 
                 const rowLocators = document.querySelectorAll("tr.athing");
                 
-                // Call the internal helper function for each element
                 return Array.from(rowLocators).map(parseRow);
             });
 
-            // 3. Slice and Update (Node.js Side)
             this.entries.push(...allPageEntries);
         } catch (error) {
             console.error("[ULTRA SURGICAL ERROR] Failed to extract entries via evaluate:", error.message);
