@@ -22,7 +22,7 @@ export class HN_Page_Optim extends HN_Page {
                     const sub_title = titleLink?.textContent.trim() || "";
                     const link = titleLink?.getAttribute('href') || "";
 
-                    const subtextRow = r.nextElementSibling; // The <tr> containing subtext/age
+                    const subtextRow = r.nextElementSibling;
                     const ageSpan = subtextRow?.querySelector('span.age');
                     const raw_age_title = ageSpan?.getAttribute('title'); 
                     
@@ -34,28 +34,27 @@ export class HN_Page_Optim extends HN_Page {
                                 const partsAfterT = array[1].split(' '); 
                                 epoch_time = partsAfterT.length > 1 ? partsAfterT[1] : '';
                             }
-                        } catch (e) {
-                            epoch_time = 'PARSE_ERROR';
-                        }
+                        } catch (e) {epoch_time = 'PARSE_ERROR';}
                     }
-                    
                     return { sub_title, epoch_time, link };
                 }
-
                 const rowLocators = document.querySelectorAll("tr.athing");
                 
                 return Array.from(rowLocators).map(parseRow);
             });
 
-            if (this.entries.length < 90)
-                this.entries.push(...allPageEntries);
-            else
-                this.entries.push(...allPageEntries.slice(0,10));
+            if (this.entries.length < 90) this.entries.push(...allPageEntries);
+            else                          this.entries.push(...allPageEntries.slice(0,10));
 
         } catch (error) {
-            console.error("[ULTRA SURGICAL ERROR] Failed to extract entries via evaluate:", error.message);
+            console.error("[ERROR] Failed to extract entries via evaluate:", error.message);
         }
     }
+
+
+
+
+
 
     async viewMore() {
         const visible = await this.mlocate.isVisible();
@@ -68,6 +67,16 @@ export class HN_Page_Optim extends HN_Page {
         }
         return false;
     }
+
+
+
+
+
+
+
+
+
+
 }
 
 export async function testSortHN(page) {

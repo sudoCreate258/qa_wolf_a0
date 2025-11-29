@@ -42,16 +42,40 @@ export class HN_Page {
             console.log(`${++cnt} ${e.sub_title}`);
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     async viewMore() {
         const visible = await this.mlocate.isVisible();
         if (visible) {
-            await this.page.waitForLoadState("load");
             await this.mlocate.click();
+            await this.page.waitForLoadState("load");
             return true;
         }
         return false;
     }
 
+
+
+
+
+
+
+
+
+
+    
     async extractEntries() {
         try {
             const rows = await this.rlocate.all();
@@ -63,7 +87,7 @@ export class HN_Page {
                 else break;
             }
         } catch (error) {
-            console.warn(`[GRACEFUL EXIT - HN_Page] Error during row extraction: ${error.message}`);
+            console.warn(`[EXIT] Error during row extraction: ${error.message}`);
         }
     }
 
@@ -77,6 +101,12 @@ export class HN_Page {
         const epoch_time = array[1].split(' ')[1];
         return { sub_title, epoch_time, link };
     }
+
+
+
+
+
+
 }
 
 export async function testSortHN(page) {
