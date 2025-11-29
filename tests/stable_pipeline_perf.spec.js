@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { withMetrics, calcImproMet, printImprov, printCompTable } from '../src/withMetrics.js';
+import { withMetrics, calcImproMet, printImprov, printCompTable } from '../src/stable_withMetrics.js';
 
 import { testSortHN as baselineRun } from '../src/hn_page_base.js';
 import { testSortHN as stage1Run }   from '../src/hn_page_optim.js';
