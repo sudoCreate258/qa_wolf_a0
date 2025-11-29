@@ -104,6 +104,10 @@ async function runOnceWithMetrics(label, fn, ...args) {
         end = performance.now();
         memoryEnd = process.memoryUsage().heapUsed;
         heapEnd = v8.getHeapStatistics().used_heap_size;
+
+        // 6. Establish Clean Baseline (Pre-Execution GC)
+        await forceGcAndSettle();
+
     }
 
     // Calculations
