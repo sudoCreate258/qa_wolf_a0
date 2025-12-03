@@ -42,20 +42,6 @@ export class HN_Page {
             console.log(`${++cnt} ${e.sub_title}`);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     async viewMore() {
         const visible = await this.mlocate.isVisible();
         if (visible) {
@@ -66,16 +52,6 @@ export class HN_Page {
         return false;
     }
 
-
-
-
-
-
-
-
-
-
-    
     async extractEntries() {
         try {
             const rows = await this.rlocate.all();
@@ -101,12 +77,6 @@ export class HN_Page {
         const epoch_time = array[1].split(' ')[1];
         return { sub_title, epoch_time, link };
     }
-
-
-
-
-
-
 }
 
 export async function testSortHN(page) {

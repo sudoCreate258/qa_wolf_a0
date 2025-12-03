@@ -51,11 +51,6 @@ export class HN_Page_Optim extends HN_Page {
         }
     }
 
-
-
-
-
-
     async viewMore() {
         const visible = await this.mlocate.isVisible();
         if (visible) {
@@ -67,16 +62,6 @@ export class HN_Page_Optim extends HN_Page {
         }
         return false;
     }
-
-
-
-
-
-
-
-
-
-
 }
 
 export async function testSortHN(page) {
